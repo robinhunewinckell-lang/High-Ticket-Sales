@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Website-Entwürfe</title>
+<meta name="apple-mobile-web-app-title" content="Entwürfe">
+<meta name="theme-color" content="#26190f">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%2326190f'/%3E%3Cpath d='M28 34h44M28 50h44M28 66h28' stroke='%23f2b84b' stroke-width='8' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+  :root{--bg:#f4ede1;--wood:#26190f;--ink:#24180f;--muted:#6e5d4d;--amber:#d4921f;--amber-light:#f2b84b;--line:#e2d5c0;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;--sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--sans);background:var(--bg);color:var(--ink);min-height:100vh;padding:env(safe-area-inset-top) 0 40px}
+  header{background:var(--wood);color:#f6ead6;padding:56px 24px 64px}
+  .wrap{max-width:980px;margin:0 auto}
+  header small{letter-spacing:.2em;text-transform:uppercase;font-size:.75rem;color:var(--amber-light);font-weight:700}
+  header h1{font-family:var(--serif);font-size:clamp(2.2rem,6vw,3.4rem);font-weight:600;margin:.25em 0 .2em;line-height:1.05}
+  header p{opacity:.75;max-width:46ch}
+  main{padding:0 24px;margin-top:-34px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+  .card{display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);border-radius:20px;overflow:hidden;text-decoration:none;color:inherit;box-shadow:0 20px 40px -28px rgba(40,20,5,.55);transition:transform .25s,box-shadow .25s}
+  .card:active{transform:scale(.98)}
+  @media (hover:hover){.card:hover{transform:translateY(-4px);box-shadow:0 28px 50px -28px rgba(40,20,5,.7)}}
+  .thumb{height:150px;position:relative;display:grid;place-items:center}
+  .thumb svg{width:56px;height:56px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+  .t1{background:linear-gradient(150deg,#3a281a,#26190f);color:var(--amber-light)}
+  .t2{background:linear-gradient(150deg,#f6c564,#d4921f);color:#26190f}
+  .t3{background:linear-gradient(150deg,#d9a184,#934d2b);color:#fff}
+  .tag{position:absolute;top:14px;left:14px;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:5px 10px;border-radius:99px;background:rgba(255,255,255,.9);color:var(--ink)}
+  .body{padding:20px 22px 22px;display:flex;flex-direction:column;gap:6px;flex:1}
+  .body h2{font-family:var(--serif);font-size:1.4rem;font-weight:600}
+  .body p{color:var(--muted);font-size:.93rem;flex:1}
+  .go{margin-top:10px;font-weight:700;color:var(--amber);font-size:.92rem}
+  .tip{margin-top:26px;padding:18px 20px;border:2px dashed var(--line);border-radius:16px;color:var(--muted);font-size:.9rem;line-height:1.55}
+  .tip b{color:var(--ink)}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <small>Website-Entwürfe</small>
+    <h1>Ihre neue Website –<br>schon mal zum Anfassen.</h1>
+    <p>Klickbare Entwürfe für Betriebe aus der Region. Alle Seiten sind Vorschauen und nicht öffentlich gelistet.</p>
+  </div>
+</header>
+<main>
+  <div class="wrap">
+    <div class="grid">
+      <a class="card" href="brauhaus-merzenich/index.html">
+        <div class="thumb t1"><span class="tag">Gastronomie</span>
+          <svg viewBox="0 0 24 24"><path d="M5 7h11v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z"/><path d="M16 10h2a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2"/><path d="M5 7c0-2 2-3 3-2 1-2 4-2 5 0 1-1 3 0 3 2"/></svg></div>
+        <div class="body"><h2>Merzenicher Brauhaus</h2><p>Website mit Live-Öffnungszeiten, Küche, Biergarten und Online-Reservierung.</p><span class="go">Website öffnen →</span></div>
+      </a>
+      <a class="card" href="brauhaus-merzenich/reservierungen.html">
+        <div class="thumb t2"><span class="tag">Für die Theke</span>
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M7 14h4M7 18h7"/></svg></div>
+        <div class="body"><h2>Reservierungs-Kalender</h2><p>Alle Reservierungen auf einen Blick – Online-Buchungen erscheinen sofort im Tischplan.</p><span class="go">Kalender öffnen →</span></div>
+      </a>
+      <a class="card" href="friseur/index.html">
+        <div class="thumb t3"><span class="tag">Beispiel</span>
+          <svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12"/></svg></div>
+        <div class="body"><h2>Salon Mira</h2><p>Beispiel-Website für einen Friseursalon (fiktiver Betrieb).</p><span class="go">Website öffnen →</span></div>
+      </a>
+    </div>
+    <div class="tip"><b>Live-Demo:</b> Website und Kalender in zwei Safari-Tabs öffnen (oder nebeneinander in Split View). Eine Reservierung auf der Website erscheint sofort im Kalender – auf demselben Gerät.</div>
+  </div>
+</main>
+</body>
+</html>

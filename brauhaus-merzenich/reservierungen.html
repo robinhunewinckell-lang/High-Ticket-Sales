@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Reservierungen – Merzenicher Brauhaus (Demo)</title>
+<!--
+  KLICKBARE DEMO des Theken-Kalenders.
+  Läuft komplett im Browser, ohne Server. Alle Daten sind erfunden und
+  werden nur lokal im Browser gespeichert ("Zurücksetzen" stellt die Beispieldaten wieder her).
+  Tische und Platzzahlen sind Annahmen – nach dem Gespräch mit dem Inhaber anpassen.
+-->
+<style>
+  :root{
+    --bg:#f3eee6; --panel:#fffdf9; --wood:#26190f; --wood-2:#3a281a; --ink:#24180f; --muted:#7a6a5b;
+    --line:#e5dccd; --amber:#d4921f; --amber-light:#f2b84b; --amber-soft:#fbecd0;
+    --web:#d4921f; --web-bg:#fdf0d8; --phone:#3d6fa8; --phone-bg:#e3edf8; --walk:#3f8a5a; --walk-bg:#e2f2e7;
+    --red:#c8493d; --radius:12px;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:15px;line-height:1.45;padding-bottom:64px}
+  button,input,select,textarea{font:inherit;color:inherit}
+  button{cursor:pointer;border:0;background:none}
+  .hide{display:none!important}
+
+  /* Topbar */
+  .top{background:var(--wood);color:#f6ead6;position:sticky;top:0;z-index:20}
+  .top-in{display:flex;align-items:center;gap:16px;padding:12px 20px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+  .brand svg{width:40px;height:40px;color:#f6ead6}
+  .brand b{font-family:var(--serif);font-size:1.15rem;font-weight:600;display:block;line-height:1.1}
+  .brand small{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;opacity:.65}
+  .clock{font-variant-numeric:tabular-nums;font-size:.92rem;opacity:.8}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:10px;font-weight:650;font-size:.95rem;transition:background .2s,transform .15s}
+  .btn:active{transform:scale(.97)}
+  .btn-amber{background:var(--amber-light);color:#1c1208}
+  .btn-amber:hover{background:#f6c564}
+  .btn-ghost{background:rgba(255,255,255,.1);color:#fff}
+  .btn-ghost:hover{background:rgba(255,255,255,.18)}
+  .btn-plain{background:var(--panel);border:1px solid var(--line)}
+  .btn-plain:hover{background:#fff}
+  .btn-dark{background:var(--wood);color:#fff}
+  .btn-red{background:#fbe5e2;color:var(--red)}
+  .btn-green{background:var(--walk-bg);color:var(--walk)}
+
+  /* Datum + Woche */
+  .datebar{display:flex;align-items:center;gap:12px;padding:16px 20px 6px;flex-wrap:wrap}
+  .datebar h1{font-family:var(--serif);font-size:1.7rem;font-weight:600;margin-right:6px}
+  .chip-today{background:var(--amber);color:#1c1208;font-size:.75rem;font-weight:700;padding:3px 10px;border-radius:99px;text-transform:uppercase;letter-spacing:.06em}
+  .navbtns{display:flex;gap:6px;margin-left:auto}
+  .navbtns .btn{padding:9px 14px}
+  .week{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;padding:10px 20px 4px}
+  .day{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 10px;text-align:left;transition:border-color .2s,box-shadow .2s}
+  .day:hover{border-color:var(--amber)}
+  .day.sel{border-color:var(--wood);box-shadow:inset 0 0 0 1px var(--wood)}
+  .day .d{font-size:.78rem;color:var(--muted);font-weight:600}
+  .day .n{font-size:1.05rem;font-weight:700}
+  .day .c{font-size:.78rem;color:var(--muted)}
+  .day.closed{opacity:.55}
+  .day .bar{height:4px;border-radius:2px;background:var(--line);margin-top:6px;overflow:hidden}
+  .day .bar i{display:block;height:100%;background:var(--amber)}
+  .day.istoday .d{color:var(--amber)}
+
+  /* Kennzahlen */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:12px 20px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+  .stat b{display:block;font-size:1.7rem;font-weight:750;font-variant-numeric:tabular-nums;line-height:1.1}
+  .stat span{font-size:.82rem;color:var(--muted)}
+
+  /* Hauptbereich */
+  .main{display:grid;grid-template-columns:1fr 340px;gap:16px;padding:6px 20px 20px;align-items:start}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .panel-h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+  .panel-h h2{font-size:1rem;font-weight:700}
+  .legend{display:flex;gap:12px;font-size:.78rem;color:var(--muted);flex-wrap:wrap}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+
+  /* Zeitleiste */
+  .tl-scroll{overflow-x:auto}
+  .tl{min-width:860px;position:relative}
+  .tl-row{display:grid;grid-template-columns:118px 1fr;border-bottom:1px solid var(--line);min-height:54px}
+  .tl-row:last-child{border-bottom:0}
+  .tl-label{padding:8px 12px;border-right:1px solid var(--line);background:#fbf7f0;position:sticky;left:0;z-index:3}
+  .tl-label b{display:block;font-size:.92rem}
+  .tl-label span{font-size:.76rem;color:var(--muted)}
+  .tl-track{position:relative;cursor:copy}
+  .tl-head .tl-track{cursor:default;height:30px}
+  .tl-head .tl-label{padding:6px 12px;font-size:.76rem;color:var(--muted)}
+  .hour{position:absolute;top:0;bottom:0;border-left:1px solid var(--line)}
+  .tl-head .hour{border-left:0;font-size:.75rem;color:var(--muted);padding-top:7px;transform:translateX(-50%)}
+  .gap{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(135deg,rgba(0,0,0,.04) 0 6px,transparent 6px 12px)}
+  .bk{position:absolute;top:6px;bottom:6px;border-radius:8px;padding:4px 9px;overflow:hidden;font-size:.8rem;line-height:1.25;cursor:pointer;border-left:4px solid;transition:transform .15s,box-shadow .15s;z-index:2}
+  .bk:hover{transform:translateY(-1px);box-shadow:0 6px 14px -6px rgba(0,0,0,.35)}
+  .bk b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bk span{white-space:nowrap;opacity:.8}
+  .bk.web{background:var(--web-bg);border-color:var(--web)}
+  .bk.phone{background:var(--phone-bg);border-color:var(--phone)}
+  .bk.walkin{background:var(--walk-bg);border-color:var(--walk)}
+  .bk.arrived{filter:saturate(.4);opacity:.75}
+  .bk.flash{animation:flash 1.2s 3}
+  @keyframes flash{50%{box-shadow:0 0 0 4px var(--amber-light)}}
+  .now{position:absolute;top:0;bottom:0;width:2px;background:var(--red);z-index:4;pointer-events:none}
+  .now::before{content:"";position:absolute;top:-4px;left:-4px;width:10px;height:10px;border-radius:50%;background:var(--red)}
+  .closed-msg{padding:60px 20px;text-align:center;color:var(--muted)}
+  .closed-msg b{display:block;font-family:var(--serif);font-size:1.5rem;color:var(--ink);margin-bottom:4px}
+
+  /* Liste */
+  .list{max-height:640px;overflow-y:auto}
+  .item{display:grid;grid-template-columns:54px 1fr;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);cursor:pointer;text-align:left;width:100%;transition:background .15s}
+  .item:hover{background:#faf5ec}
+  .item .t{font-weight:750;font-variant-numeric:tabular-nums;font-size:1rem}
+  .item .nm{font-weight:650}
+  .item .meta{font-size:.8rem;color:var(--muted)}
+  .item .note{font-size:.78rem;color:var(--ink);background:var(--amber-soft);display:inline-block;padding:1px 7px;border-radius:5px;margin-top:3px}
+  .item.cancelled .nm,.item.cancelled .t{text-decoration:line-through;color:var(--muted)}
+  .item.arrived .t::after{content:" ✓";color:var(--walk)}
+  .src{display:inline-block;font-size:.7rem;font-weight:700;padding:1px 7px;border-radius:99px;margin-left:4px;vertical-align:1px}
+  .src.web{background:var(--web-bg);color:#8a5a0b}
+  .src.phone{background:var(--phone-bg);color:var(--phone)}
+  .src.walkin{background:var(--walk-bg);color:var(--walk)}
+  .empty{padding:30px 16px;color:var(--muted);text-align:center;font-size:.9rem}
+
+  /* Modal */
+  .ov{position:fixed;inset:0;background:rgba(20,12,6,.55);z-index:50;display:grid;place-items:center;padding:16px;backdrop-filter:blur(2px)}
+  .modal{background:var(--panel);border-radius:16px;width:min(520px,100%);max-height:92vh;overflow:auto;box-shadow:0 30px 80px -20px rgba(0,0,0,.5)}
+  .modal-h{display:flex;justify-content:space-between;align-items:center;padding:18px 22px;border-bottom:1px solid var(--line)}
+  .modal-h h3{font-family:var(--serif);font-size:1.35rem;font-weight:600}
+  .x{font-size:1.5rem;line-height:1;color:var(--muted);padding:4px 8px;border-radius:8px}
+  .x:hover{background:var(--bg)}
+  .modal-b{padding:18px 22px;display:grid;gap:14px}
+  .modal-f{padding:14px 22px 20px;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  label.f{display:grid;gap:5px;font-size:.82rem;font-weight:650;color:var(--muted)}
+  .f input,.f select,.f textarea{border:1px solid var(--line);border-radius:9px;padding:10px 12px;background:#fff;font-size:.98rem;width:100%}
+  .f input:focus,.f select:focus,.f textarea:focus{outline:2px solid var(--amber-light);border-color:var(--amber)}
+  .seg{display:flex;gap:6px;flex-wrap:wrap}
+  .seg label{flex:1;min-width:90px}
+  .seg input{position:absolute;opacity:0}
+  .seg span{display:block;text-align:center;padding:9px;border:1px solid var(--line);border-radius:9px;font-size:.9rem;font-weight:600;cursor:pointer;background:#fff}
+  .seg input:checked+span{background:var(--wood);color:#fff;border-color:var(--wood)}
+  .stepper{display:flex;align-items:center;gap:8px}
+  .stepper button{width:44px;height:44px;border-radius:10px;background:var(--bg);font-size:1.3rem;font-weight:700}
+  .stepper output{min-width:40px;text-align:center;font-size:1.4rem;font-weight:750}
+  .err{color:var(--red);font-size:.88rem;font-weight:600}
+  .dl{display:grid;grid-template-columns:110px 1fr;gap:8px 12px;font-size:.95rem}
+  .dl dt{color:var(--muted)}
+  .dl dd{font-weight:600}
+
+  /* Freie Tische */
+  .free-list{display:grid;gap:8px}
+  .free{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:#fff}
+  .free b{font-size:1rem}
+  .free span{font-size:.82rem;color:var(--muted)}
+  .alts{display:flex;gap:8px;flex-wrap:wrap}
+  .alts button{padding:8px 14px;border-radius:99px;background:var(--amber-soft);font-weight:650}
+  .big-answer{font-size:1.15rem;font-weight:700;padding:12px 14px;border-radius:10px}
+  .big-answer.yes{background:var(--walk-bg);color:var(--walk)}
+  .big-answer.no{background:#fbe5e2;color:var(--red)}
+
+  /* Toast */
+  .toast{position:fixed;right:20px;top:84px;z-index:60;background:var(--wood);color:#fff;border-radius:14px;padding:14px 18px;box-shadow:0 20px 40px -10px rgba(0,0,0,.45);max-width:340px;transform:translateX(130%);transition:transform .45s cubic-bezier(.2,.8,.2,1);border-left:5px solid var(--amber-light)}
+  .toast.on{transform:none}
+  .toast small{display:block;color:var(--amber-light);font-weight:700;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px}
+
+  /* Demo-Leiste */
+  .demo{position:fixed;left:0;right:0;bottom:0;z-index:30;background:#1a110a;color:#e8dcc8;display:flex;align-items:center;gap:12px;padding:10px 20px;flex-wrap:wrap;font-size:.86rem}
+  .demo b{color:var(--amber-light);letter-spacing:.08em;text-transform:uppercase;font-size:.76rem}
+  .demo .sp{margin-right:auto;opacity:.75}
+  .demo .btn{padding:8px 14px;font-size:.86rem}
+  .demo a{color:#e8dcc8}
+
+  @media (max-width:1000px){
+    .main{grid-template-columns:1fr}
+    .list{max-height:none}
+    .stats{grid-template-columns:1fr 1fr}
+  }
+  @media (max-width:640px){
+    .top-in{padding:10px 14px;gap:10px}
+    .clock{display:none}
+    .top .btn{padding:10px 12px;font-size:.88rem}
+    .datebar,.week,.stats,.main{padding-left:12px;padding-right:12px}
+    .datebar h1{font-size:1.3rem}
+    .week{grid-template-columns:repeat(7,minmax(64px,1fr));overflow-x:auto}
+    .row3{grid-template-columns:1fr 1fr}
+    .demo .sp{display:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="top-in">
+    <div class="brand">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" stroke-width="3"/>
+        <g fill="none" stroke="#f2b84b" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+          <path d="M34 38 h24 v28 a4 4 0 0 1 -4 4 h-16 a4 4 0 0 1 -4 -4 z"/>
+          <path d="M58 44 h6 a5 5 0 0 1 5 5 v7 a5 5 0 0 1 -5 5 h-6"/>
+          <path d="M33 38 c0-6 6-8 9-5 c3-5 11-4 12 0 c4-3 8 1 5 5"/>
+        </g>
+      </svg>
+      <div><b>Merzenicher Brauhaus</b><small>Reservierungen</small></div>
+    </div>
+    <span class="clock" id="clock"></span>
+    <button class="btn btn-ghost" id="btnFind">🔍 Freien Tisch finden</button>
+    <button class="btn btn-amber" id="btnNew">＋ Reservierung</button>
+  </div>
+</div>
+
+<div class="datebar">
+  <h1 id="dateTitle"></h1>
+  <span class="chip-today hide" id="todayChip">Heute</span>
+  <div class="navbtns">
+    <button class="btn btn-plain" id="prev" aria-label="Vorheriger Tag">‹</button>
+    <button class="btn btn-plain" id="today">Heute</button>
+    <button class="btn btn-plain" id="next" aria-label="Nächster Tag">›</button>
+  </div>
+</div>
+<div class="week" id="week"></div>
+
+<div class="stats">
+  <div class="stat"><b id="sRes">0</b><span>Reservierungen</span></div>
+  <div class="stat"><b id="sGuests">0</b><span>Gäste erwartet</span></div>
+  <div class="stat"><b id="sWeb">0</b><span>davon online gebucht</span></div>
+  <div class="stat"><b id="sFree">–</b><span id="sFreeL">freie Tische</span></div>
+</div>
+
+<div class="main">
+  <div class="panel">
+    <div class="panel-h">
+      <h2>Tischplan</h2>
+      <div class="legend"><span><i style="background:var(--web)"></i>Website</span><span><i style="background:var(--phone)"></i>Telefon</span><span><i style="background:var(--walk)"></i>Vor Ort</span><span>Klick auf freie Stelle = neue Reservierung</span></div>
+    </div>
+    <div class="tl-scroll"><div class="tl" id="tl"></div></div>
+  </div>
+  <div class="panel">
+    <div class="panel-h"><h2>Ablauf des Tages</h2><span class="legend" id="listCount"></span></div>
+    <div class="list" id="list"></div>
+  </div>
+</div>
+
+<div class="demo">
+  <b>Demo</b>
+  <span class="sp">Beispieldaten · keine echten Gäste · gespeichert nur in diesem Browser</span>
+  <button class="btn btn-amber" id="btnSim">🔔 Online-Reservierung simulieren</button>
+  <button class="btn btn-ghost" id="btnReset">Zurücksetzen</button>
+  <a href="index.html">← Website</a>
+</div>
+
+<div class="toast" id="toast"></div>
+<div id="modalRoot"></div>
+
+<script src="reservierung-core.js"></script>
+<script>
+(function(){
+  /* ===== Tische, Öffnungszeiten und Speicher kommen aus reservierung-core.js (gemeinsam mit der Website) ===== */
+  var R=window.RES;
+  var TABLES=R.TABLES, OPEN=R.OPEN, DAYS=R.DAYS, DS=R.DS, MONTHS=R.MONTHS, SRC=R.SRC;
+
+  /* ================= Helfer ================= */
+  function pad(n){return String(n).padStart(2,'0')}
+  function ymd(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+  function parse(s){var p=s.split('-').map(Number);return new Date(p[0],p[1]-1,p[2])}
+  function addDays(s,n){var d=parse(s);d.setDate(d.getDate()+n);return ymd(d)}
+  function toMin(t){var p=t.split(':').map(Number);return p[0]*60+p[1]}
+  function fmt(m){return pad(Math.floor(m/60)%24)+':'+pad(m%60)}
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function todayStr(){return ymd(new Date())}
+  function nowMin(){var n=new Date();return n.getHours()*60+n.getMinutes()}
+  function open(date){return OPEN[parse(date).getDay()]}
+  function isClosed(date){return open(date).length===0}
+  function slots(date){var r=[];open(date).forEach(function(iv){for(var m=iv[0];m<=iv[1]-90;m+=30)r.push(m)});return r}
+  function longDate(date){var d=parse(date);return DAYS[d.getDay()]+', '+d.getDate()+'. '+MONTHS[d.getMonth()]}
+  function uid(){return Math.random().toString(36).slice(2,10)}
+
+  /* ================= Daten ================= */
+  var data=[];
+  function save(){R.save(data)}
+  function load(){var d=R.load();if(d){data=d;return true}return false}
+  function active(r){return r.status!=='cancelled'}
+  function dayRes(date){return data.filter(function(r){return r.date===date}).sort(function(a,b){return toMin(a.start)-toMin(b.start)})}
+  function isFree(tid,date,start,dur,ignore){return R.isFree(data,tid,date,start,dur,ignore)}
+  function fitting(date,start,dur,persons,ignore){return R.fitting(data,date,start,dur,persons,ignore)}
+  function tableName(id){var t=TABLES.find(function(x){return x.id===id});return t?t.name:id}
+  function tableSeats(id){var t=TABLES.find(function(x){return x.id===id});return t?t.seats:0}
+
+  /* ================= Beispieldaten (kommen aus dem Kern) ================= */
+  var FIRST=R.FIRST, LAST=R.LAST;
+  function seed(){data=R.seed()}
+
+  /* ================= Zustand ================= */
+  var view=todayStr();
+  function firstOpenFrom(date){for(var i=0;i<8;i++){var d=addDays(date,i);if(!isClosed(d))return d}return date}
+
+  /* ================= Darstellung ================= */
+  var $=function(id){return document.getElementById(id)};
+  function render(){
+    var t=todayStr(), isToday=view===t;
+    $('dateTitle').textContent=longDate(view);
+    $('todayChip').classList.toggle('hide',!isToday);
+    renderWeek(); renderStats(); renderTimeline(); renderList();
+  }
+  function renderWeek(){
+    var d=parse(view), mon=addDays(view,-((d.getDay()+6)%7)), t=todayStr(), html='';
+    var max=TABLES.reduce(function(s,x){return s+x.seats},0);
+    for(var i=0;i<7;i++){
+      var day=addDays(mon,i), dd=parse(day), closed=isClosed(day);
+      var rs=dayRes(day).filter(active), g=rs.reduce(function(s,r){return s+r.persons},0);
+      html+='<button class="day'+(day===view?' sel':'')+(closed?' closed':'')+(day===t?' istoday':'')+'" data-day="'+day+'">'+
+        '<div class="d">'+DS[dd.getDay()]+(day===t?' · heute':'')+'</div><div class="n">'+dd.getDate()+'.'+pad(dd.getMonth()+1)+'.</div>'+
+        '<div class="c">'+(closed?'Ruhetag':rs.length+' Res. · '+g+' Gäste')+'</div>'+
+        '<div class="bar"><i style="width:'+(closed?0:Math.min(100,g/max*180))+'%"></i></div></button>';
+    }
+    $('week').innerHTML=html;
+  }
+  function renderStats(){
+    var rs=dayRes(view).filter(active);
+    $('sRes').textContent=rs.length;
+    $('sGuests').textContent=rs.reduce(function(s,r){return s+r.persons},0);
+    $('sWeb').textContent=rs.filter(function(r){return r.source==='web'}).length;
+    if(isClosed(view)){$('sFree').textContent='–';$('sFreeL').textContent='Ruhetag';return}
+    var t=todayStr(), at, label;
+    var nm=nowMin(), openNow=open(view).some(function(iv){return nm>=iv[0]&&nm<iv[1]});
+    if(view===t&&openNow){at=Math.ceil(nm/30)*30;label='Tische jetzt frei'}else{at=1140;label='Tische frei um 19:00'}
+    $('sFree').textContent=TABLES.filter(function(x){return isFree(x.id,view,at,90)}).length+' / '+TABLES.length;
+    $('sFreeL').textContent=label;
+  }
+  function renderTimeline(){
+    var tl=$('tl');
+    if(isClosed(view)){tl.innerHTML='<div class="closed-msg"><b>Ruhetag</b>Montag und Dienstag ist das Brauhaus geschlossen.</div>';return}
+    var iv=open(view), S=iv[0][0], E=1440, span=E-S;
+    function pos(m){return((m-S)/span*100)+'%'}
+    var hours='';for(var h=Math.ceil(S/60)*60;h<=E;h+=60){hours+='<div class="hour" style="left:'+pos(h)+(h===S?';transform:none;padding-left:6px':'')+'">'+(h<E?fmt(h):'')+'</div>'}
+    var gaps='';for(var i=1;i<iv.length;i++){gaps+='<div class="gap" style="left:'+pos(iv[i-1][1])+';width:'+((iv[i][0]-iv[i-1][1])/span*100)+'%" title="Geschlossen"></div>'}
+    var gridLines='';for(var g=Math.ceil(S/60)*60;g<E;g+=60){gridLines+='<div class="hour" style="left:'+pos(g)+'"></div>'}
+    var html='<div class="tl-row tl-head"><div class="tl-label">Tisch</div><div class="tl-track">'+hours+'</div></div>';
+    var rs=dayRes(view).filter(active);
+    TABLES.forEach(function(t){
+      html+='<div class="tl-row"><div class="tl-label"><b>'+t.name+'</b><span>'+t.seats+' Plätze</span></div><div class="tl-track" data-table="'+t.id+'">'+gridLines+gaps;
+      rs.filter(function(r){return r.table===t.id}).forEach(function(r){
+        var s=toMin(r.start), e=Math.min(s+r.dur,E);
+        html+='<div class="bk '+r.source+(r.status==='arrived'?' arrived':'')+'" data-id="'+r.id+'" style="left:'+pos(s)+';width:calc('+((e-s)/span*100)+'% - 3px)" title="'+esc(r.name)+' · '+r.persons+' Pers. · '+r.start+'">'+
+          '<b>'+(r.status==='arrived'?'✓ ':'')+esc(r.name)+'</b><span>'+r.persons+' P · '+r.start+'</span></div>';
+      });
+      html+='</div></div>';
+    });
+    var nm=nowMin();
+    if(view===todayStr()&&nm>=S&&nm<=E){html+='<div class="now" style="left:calc(118px + (100% - 118px) * '+((nm-S)/span)+')"></div>'}
+    tl.innerHTML=html;
+  }
+  function renderList(){
+    var rs=dayRes(view), el=$('list');
+    $('listCount').textContent=rs.filter(active).length+' aktiv';
+    if(isClosed(view)){el.innerHTML='<div class="empty">Ruhetag – keine Reservierungen.</div>';return}
+    if(!rs.length){el.innerHTML='<div class="empty">Noch keine Reservierungen für diesen Tag.</div>';return}
+    el.innerHTML=rs.map(function(r){
+      return '<button class="item '+r.status+'" data-id="'+r.id+'"><div class="t">'+r.start+'</div><div>'+
+        '<div class="nm">'+esc(r.name)+'<span class="src '+r.source+'">'+SRC[r.source]+'</span></div>'+
+        '<div class="meta">'+r.persons+' Personen · '+tableName(r.table)+(r.status==='cancelled'?' · storniert':'')+'</div>'+
+        (r.note?'<div class="note">'+esc(r.note)+'</div>':'')+'</div></button>';
+    }).join('');
+  }
+
+  /* ================= Modals ================= */
+  function modal(title,body,foot){
+    $('modalRoot').innerHTML='<div class="ov"><div class="modal" role="dialog" aria-modal="true"><div class="modal-h"><h3>'+title+'</h3><button class="x" data-close aria-label="Schließen">×</button></div>'+
+      '<div class="modal-b">'+body+'</div>'+(foot?'<div class="modal-f">'+foot+'</div>':'')+'</div></div>';
+    var ov=$('modalRoot').firstChild;
+    ov.addEventListener('click',function(e){if(e.target===ov||e.target.hasAttribute('data-close'))close()});
+    return ov;
+  }
+  function close(){$('modalRoot').innerHTML=''}
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')close()});
+
+  /* ----- Neue Reservierung ----- */
+  function openNew(pre){
+    pre=pre||{};
+    var date=pre.date||(isClosed(view)?firstOpenFrom(view):view);
+    var ov=modal('Neue Reservierung',
+      '<label class="f">Name<input id="fName" placeholder="z. B. Familie Schmitz" autocomplete="off"></label>'+
+      '<div class="row2"><label class="f">Telefon (optional)<input id="fPhone" inputmode="tel" autocomplete="off"></label>'+
+      '<div class="f"><span style="font-size:.82rem;font-weight:650;color:var(--muted)">Personen</span><div class="stepper"><button type="button" id="pMinus">−</button><output id="fPers">'+(pre.persons||2)+'</output><button type="button" id="pPlus">+</button></div></div></div>'+
+      '<div class="row3"><label class="f">Datum<input type="date" id="fDate" value="'+date+'"></label>'+
+      '<label class="f">Uhrzeit<select id="fTime"></select></label>'+
+      '<label class="f">Dauer<select id="fDur"><option value="90">1,5 Std.</option><option value="120" selected>2 Std.</option><option value="150">2,5 Std.</option><option value="180">3 Std.</option></select></label></div>'+
+      '<label class="f">Tisch<select id="fTable"></select></label>'+
+      '<div class="f"><span style="font-size:.82rem;font-weight:650;color:var(--muted)">Wie kam die Reservierung?</span><div class="seg">'+
+        '<label><input type="radio" name="src" value="phone" checked><span>📞 Telefon</span></label>'+
+        '<label><input type="radio" name="src" value="walkin"><span>🍺 Vor Ort</span></label>'+
+        '<label><input type="radio" name="src" value="web"><span>🌐 Website</span></label></div></div>'+
+      '<label class="f">Notiz<input id="fNote" placeholder="Kinderstuhl, Geburtstag …" autocomplete="off"></label>'+
+      '<div class="err" id="fErr"></div>',
+      '<button class="btn btn-plain" data-close>Abbrechen</button><button class="btn btn-dark" id="fSave">Reservierung speichern</button>');
+    var persons=pre.persons||2;
+    function fillTimes(keep){
+      var d=$('fDate').value, sl=slots(d), sel=$('fTime');
+      if(!sl.length){sel.innerHTML='<option value="">Ruhetag</option>';return}
+      sel.innerHTML=sl.map(function(m){return'<option value="'+fmt(m)+'">'+fmt(m)+'</option>'}).join('');
+      var want=keep||pre.start; if(want&&sl.indexOf(toMin(want))>-1)sel.value=want; else sel.value=fmt(sl.filter(function(m){return m>=1080})[0]||sl[0]);
+    }
+    function fillTables(){
+      var d=$('fDate').value, t=$('fTime').value, dur=+$('fDur').value, sel=$('fTable'), prev=sel.value||pre.table||'auto';
+      if(!t){sel.innerHTML='';return}
+      var best=fitting(d,toMin(t),dur,persons)[0];
+      var opts='<option value="auto">'+(best?'Automatisch → '+best.name+' ('+best.seats+' Plätze)':'Automatisch – kein passender Tisch frei')+'</option>';
+      TABLES.forEach(function(x){var free=isFree(x.id,d,toMin(t),dur), small=x.seats<persons;
+        opts+='<option value="'+x.id+'"'+(!free?' disabled':'')+'>'+x.name+' · '+x.seats+' Plätze'+(!free?' (belegt)':small?' (zu klein)':'')+'</option>'});
+      sel.innerHTML=opts;
+      var o=sel.querySelector('option[value="'+prev+'"]'); sel.value=(o&&!o.disabled)?prev:'auto';
+    }
+    fillTimes();fillTables();
+    $('fDate').onchange=function(){fillTimes($('fTime').value);fillTables()};
+    $('fTime').onchange=fillTables;$('fDur').onchange=fillTables;
+    $('pMinus').onclick=function(){persons=Math.max(1,persons-1);$('fPers').textContent=persons;fillTables()};
+    $('pPlus').onclick=function(){persons=Math.min(40,persons+1);$('fPers').textContent=persons;fillTables()};
+    $('fName').focus();
+    $('fSave').onclick=function(){
+      var name=$('fName').value.trim(), d=$('fDate').value, t=$('fTime').value, dur=+$('fDur').value, tb=$('fTable').value;
+      if(!name)return $('fErr').textContent='Bitte einen Namen eingeben.';
+      if(!t)return $('fErr').textContent='An diesem Tag ist Ruhetag.';
+      if(tb==='auto'){var b=fitting(d,toMin(t),dur,persons)[0];if(!b)return $('fErr').textContent='Kein passender Tisch frei – andere Uhrzeit wählen oder Tisch manuell zuweisen.';tb=b.id}
+      if(!isFree(tb,d,toMin(t),dur))return $('fErr').textContent='Der Tisch ist zu der Zeit schon belegt.';
+      var r={id:uid(),date:d,start:t,dur:dur,name:name,phone:$('fPhone').value.trim(),persons:persons,table:tb,
+        source:ov.querySelector('input[name=src]:checked').value,note:$('fNote').value.trim(),status:'confirmed'};
+      data.push(r);save();close();view=d;render();flash(r.id);
+      toast('Gespeichert',esc(r.name)+' · '+r.persons+' Pers. · '+r.start+' Uhr · '+tableName(r.table));
+    };
+  }
+
+  /* ----- Details ----- */
+  function openDetail(id){
+    var r=data.find(function(x){return x.id===id});if(!r)return;
+    var foot='';
+    if(r.status!=='cancelled'){
+      foot+=r.status==='arrived'?'<button class="btn btn-plain" data-act="unarrive">Doch nicht da</button>':'<button class="btn btn-green" data-act="arrive">✓ Gäste sind da</button>';
+      foot+='<button class="btn btn-red" data-act="cancel">Stornieren</button>';
+    } else foot+='<button class="btn btn-plain" data-act="restore">Wiederherstellen</button>';
+    foot+='<button class="btn btn-plain" data-act="delete">Löschen</button>';
+    var ov=modal(esc(r.name),
+      '<dl class="dl"><dt>Datum</dt><dd>'+longDate(r.date)+'</dd><dt>Uhrzeit</dt><dd>'+r.start+' – '+fmt(toMin(r.start)+r.dur)+' Uhr</dd>'+
+      '<dt>Personen</dt><dd>'+r.persons+'</dd><dt>Tisch</dt><dd>'+tableName(r.table)+' ('+tableSeats(r.table)+' Plätze)</dd>'+
+      '<dt>Telefon</dt><dd>'+(r.phone?'<a href="tel:'+esc(r.phone.replace(/\s/g,''))+'">'+esc(r.phone)+'</a>':'–')+'</dd>'+
+      '<dt>Quelle</dt><dd><span class="src '+r.source+'" style="margin:0">'+SRC[r.source]+'</span></dd>'+
+      '<dt>Notiz</dt><dd>'+(r.note?esc(r.note):'–')+'</dd>'+
+      '<dt>Status</dt><dd>'+({confirmed:'Bestätigt',arrived:'✓ Angekommen',cancelled:'Storniert'}[r.status])+'</dd></dl>',foot);
+    ov.querySelectorAll('[data-act]').forEach(function(b){b.onclick=function(){
+      var a=b.dataset.act;
+      if(a==='arrive')r.status='arrived';
+      if(a==='unarrive')r.status='confirmed';
+      if(a==='cancel')r.status='cancelled';
+      if(a==='restore'){if(!isFree(r.table,r.date,toMin(r.start),r.dur,r.id)){alert('Der Tisch ist inzwischen anderweitig belegt.');return}r.status='confirmed'}
+      if(a==='delete'){if(!confirm('Reservierung von '+r.name+' endgültig löschen?'))return;data=data.filter(function(x){return x.id!==r.id})}
+      save();close();render();
+    }});
+  }
+
+  /* ----- Freien Tisch finden ----- */
+  function openFind(){
+    var date=isClosed(view)?firstOpenFrom(view):view, persons=4;
+    var sl=slots(date), nm=nowMin(), def=(date===todayStr()?sl.filter(function(m){return m>=nm})[0]:null)||sl.filter(function(m){return m>=1080})[0]||sl[0];
+    modal('Freien Tisch finden',
+      '<p style="color:var(--muted);margin-top:-4px">Ein Gast fragt an der Theke oder am Telefon? Hier sehen Sie sofort, was frei ist.</p>'+
+      '<div class="row2"><div class="f"><span style="font-size:.82rem;font-weight:650;color:var(--muted)">Personen</span><div class="stepper"><button type="button" id="qMinus">−</button><output id="qPers">4</output><button type="button" id="qPlus">+</button></div></div>'+
+      '<label class="f">Uhrzeit<select id="qTime">'+sl.map(function(m){return'<option value="'+fmt(m)+'"'+(m===def?' selected':'')+'>'+fmt(m)+'</option>'}).join('')+'</select></label></div>'+
+      '<div style="font-size:.85rem;color:var(--muted)">'+longDate(date)+' · Dauer 2 Std.</div>'+
+      '<div id="qRes"></div>');
+    function run(){
+      var t=toMin($('qTime').value), f=fitting(date,t,120,persons), out='';
+      if(f.length){
+        out+='<div class="big-answer yes">✓ Ja, '+f.length+' passende'+(f.length===1?'r Tisch':' Tische')+' frei</div><div class="free-list" style="margin-top:10px">';
+        f.slice(0,4).forEach(function(x){out+='<div class="free"><div><b>'+x.name+'</b><br><span>'+x.seats+' Plätze · frei ab '+fmt(t)+'</span></div><button class="btn btn-dark" data-book="'+x.id+'">Reservieren</button></div>'});
+        out+='</div>';
+      } else {
+        out+='<div class="big-answer no">✗ Um '+fmt(t)+' ist kein Tisch für '+persons+' frei</div>';
+        var alts=slots(date).filter(function(m){return Math.abs(m-t)<=180&&fitting(date,m,120,persons).length}).sort(function(a,b){return Math.abs(a-t)-Math.abs(b-t)}).slice(0,5).sort(function(a,b){return a-b});
+        out+=alts.length?'<p style="margin:12px 0 8px;font-weight:650">Stattdessen frei:</p><div class="alts">'+alts.map(function(m){return'<button data-alt="'+fmt(m)+'">'+fmt(m)+' Uhr</button>'}).join('')+'</div>':'<p style="margin-top:10px;color:var(--muted)">Heute leider ausgebucht.</p>';
+      }
+      $('qRes').innerHTML=out;
+      $('qRes').querySelectorAll('[data-book]').forEach(function(b){b.onclick=function(){openNew({date:date,start:$('qTime').value,persons:persons,table:b.dataset.book})}});
+      $('qRes').querySelectorAll('[data-alt]').forEach(function(b){b.onclick=function(){$('qTime').value=b.dataset.alt;run()}});
+    }
+    $('qMinus').onclick=function(){persons=Math.max(1,persons-1);$('qPers').textContent=persons;run()};
+    $('qPlus').onclick=function(){persons=Math.min(40,persons+1);$('qPers').textContent=persons;run()};
+    $('qTime').onchange=run; run();
+  }
+
+  /* ----- Online-Reservierung simulieren ----- */
+  function simulate(){
+    var r0=Math.random, date=isClosed(view)?firstOpenFrom(view):view;
+    var sl=slots(date).filter(function(m){return m>=1050&&m<=1260}), tries=0, r=null;
+    if(date===todayStr()){var nm=nowMin();sl=sl.filter(function(m){return m>nm+30})}
+    if(!sl.length){date=firstOpenFrom(addDays(date,1));sl=slots(date).filter(function(m){return m>=1050&&m<=1260})}
+    while(!r&&tries++<40){
+      var start=sl[Math.floor(r0()*sl.length)], persons=[2,2,3,4,4,5,6][Math.floor(r0()*7)], f=fitting(date,start,120,persons);
+      if(f.length){var fam=r0()<.4;r={id:uid(),date:date,start:fmt(start),dur:120,
+        name:fam?'Familie '+LAST[Math.floor(r0()*LAST.length)]:FIRST[Math.floor(r0()*FIRST.length)]+' '+LAST[Math.floor(r0()*LAST.length)],
+        phone:'0176 '+Math.floor(1000000+r0()*8999999),persons:persons,table:f[0].id,source:'web',
+        note:['','','Kinderstuhl','Geburtstag 🎂'][Math.floor(r0()*4)],status:'confirmed'}}
+    }
+    if(!r){toast('Ausgebucht','Für diesen Abend ist online nichts mehr frei.');return}
+    data.push(r);save();view=date;render();flash(r.id);
+    toast('🔔 Neue Online-Reservierung',esc(r.name)+' · '+r.persons+' Personen<br>'+DS[parse(r.date).getDay()]+' '+r.start+' Uhr · automatisch an '+tableName(r.table));
+  }
+
+  /* ================= Kleinkram ================= */
+  var tt;
+  function toast(h,b){var t=$('toast');t.innerHTML='<small>'+h+'</small>'+b;t.classList.add('on');clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('on')},4500)}
+  function flash(id){setTimeout(function(){var el=document.querySelector('.bk[data-id="'+id+'"]');if(el){el.classList.add('flash');el.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'})}},50)}
+  function tick(){var n=new Date();$('clock').textContent=DS[n.getDay()]+' '+pad(n.getHours())+':'+pad(n.getMinutes())}
+
+  /* ================= Ereignisse ================= */
+  $('prev').onclick=function(){view=addDays(view,-1);render()};
+  $('next').onclick=function(){view=addDays(view,1);render()};
+  $('today').onclick=function(){view=todayStr();render()};
+  $('btnNew').onclick=function(){openNew()};
+  $('btnFind').onclick=openFind;
+  $('btnSim').onclick=simulate;
+  $('btnReset').onclick=function(){if(confirm('Alle Änderungen verwerfen und Beispieldaten neu laden?')){seed();view=todayStr();render()}};
+  $('week').onclick=function(e){var b=e.target.closest('[data-day]');if(b){view=b.dataset.day;render()}};
+  $('list').onclick=function(e){var b=e.target.closest('[data-id]');if(b)openDetail(b.dataset.id)};
+  $('tl').onclick=function(e){
+    var bk=e.target.closest('.bk');if(bk)return openDetail(bk.dataset.id);
+    var tr=e.target.closest('.tl-track[data-table]');if(!tr)return;
+    var iv=open(view),S=iv[0][0],rect=tr.getBoundingClientRect();
+    var m=S+(e.clientX-rect.left)/rect.width*(1440-S); m=Math.floor(m/30)*30;
+    var sl=slots(view); if(sl.indexOf(m)<0){m=sl.reduce(function(a,b){return Math.abs(b-m)<Math.abs(a-m)?b:a},sl[0])}
+    openNew({date:view,start:fmt(m),table:tr.dataset.table,persons:Math.min(tableSeats(tr.dataset.table),4)});
+  };
+
+  /* ================= Live-Verbindung zur Website =================
+     Bucht jemand auf der Website, landet die Reservierung im selben Speicher.
+     Der Kalender merkt das sofort (storage-Ereignis) bzw. spätestens nach 2 Sekunden. */
+  function sync(){
+    var d=R.load(); if(!d) return;
+    if(JSON.stringify(d)===JSON.stringify(data)) return;
+    var fresh=d.filter(function(r){return !data.some(function(x){return x.id===r.id})});
+    data=d;
+    var web=fresh.filter(function(r){return r.source==='web'}).pop();
+    if(web){view=web.date;render();flash(web.id);
+      toast('🔔 Neue Online-Reservierung',esc(web.name)+' · '+web.persons+' Personen<br>'+DS[parse(web.date).getDay()]+' '+parse(web.date).getDate()+'.'+pad(parse(web.date).getMonth()+1)+'. · '+web.start+' Uhr · '+tableName(web.table)+(web.note?'<br>„'+esc(web.note)+'“':''));
+    } else render();
+  }
+  window.addEventListener('storage',function(e){if(e.key===R.KEY)sync()});
+  setInterval(sync,2000);
+
+  if(!load())seed();
+  tick();setInterval(function(){tick();renderStats();if(view===todayStr())renderTimeline()},60000);
+  render();
+})();
+</script>
+</body>
+</html>

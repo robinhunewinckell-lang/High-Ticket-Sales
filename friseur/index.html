@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<!-- ANPASSEN: Titel und Beschreibung (wichtig für Google) -->
+<title>Salon Mira – Friseur in Musterstadt</title>
+<meta name="description" content="Salon Mira – Ihr Friseur in Musterstadt. Schnitt, Farbe, Styling. Jetzt Termin vereinbaren.">
+<style>
+  /* Keine externen Schriften/Dienste -> DSGVO-freundlich */
+  :root{
+    --bg:#f7f3ee; --surface:#fffdf9; --ink:#1f1b18; --muted:#6b625b;
+    --accent:#b5643c; --accent-dark:#934d2b; --line:#e6ddd3;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --radius:14px; --max:1100px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:var(--sans);background:var(--bg);color:var(--ink);line-height:1.6;font-size:17px}
+  a{color:inherit}
+  img{max-width:100%;display:block}
+  .wrap{max-width:var(--max);margin:0 auto;padding:0 22px}
+  h1,h2,h3{font-family:var(--serif);font-weight:600;line-height:1.15;letter-spacing:-.01em}
+  h2{font-size:clamp(1.9rem,4vw,2.6rem);margin-bottom:.4em}
+  .eyebrow{text-transform:uppercase;letter-spacing:.16em;font-size:.78rem;color:var(--accent);font-weight:600;margin-bottom:.8em}
+  section{padding:84px 0}
+  .lead{color:var(--muted);max-width:56ch}
+
+  /* Buttons */
+  .btn{display:inline-flex;align-items:center;gap:.5em;padding:14px 26px;border-radius:999px;text-decoration:none;font-weight:600;font-size:.98rem;transition:background .2s,transform .2s}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-primary:hover{background:var(--accent-dark);transform:translateY(-1px)}
+  .btn-ghost{border:1.5px solid var(--ink);color:var(--ink)}
+  .btn-ghost:hover{background:var(--ink);color:var(--bg)}
+
+  /* Header */
+  header{position:sticky;top:0;z-index:20;background:rgba(247,243,238,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:68px}
+  .logo{font-family:var(--serif);font-size:1.5rem;font-weight:600;text-decoration:none}
+  .logo span{color:var(--accent)}
+  .nav ul{display:flex;gap:28px;list-style:none}
+  .nav ul a{text-decoration:none;font-size:.95rem;color:var(--muted)}
+  .nav ul a:hover{color:var(--ink)}
+  .nav .btn{padding:10px 20px;font-size:.9rem}
+
+  /* Hero */
+  .hero{padding:72px 0 90px}
+  .hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:56px;align-items:center}
+  .hero h1{font-size:clamp(2.6rem,6vw,4.4rem);margin-bottom:.35em}
+  .hero h1 em{font-style:italic;color:var(--accent)}
+  .hero p{font-size:1.15rem;color:var(--muted);max-width:44ch;margin-bottom:2em}
+  .hero-actions{display:flex;gap:14px;flex-wrap:wrap}
+  .hero-meta{display:flex;gap:28px;margin-top:2.4em;color:var(--muted);font-size:.92rem;flex-wrap:wrap}
+  .hero-meta strong{display:block;color:var(--ink);font-size:1.25rem;font-family:var(--serif)}
+  .hero-visual{aspect-ratio:4/5;border-radius:200px 200px var(--radius) var(--radius);
+    background:radial-gradient(circle at 30% 25%,#e9c9b0 0,transparent 55%),linear-gradient(160deg,#c98a63,#7a3f22);
+    position:relative;overflow:hidden;box-shadow:0 30px 60px -30px rgba(80,40,20,.5)}
+  .hero-visual .tag{position:absolute;left:18px;bottom:18px;background:var(--surface);padding:12px 16px;border-radius:12px;font-size:.9rem;box-shadow:0 8px 24px rgba(0,0,0,.12)}
+  .tag b{color:var(--accent)}
+  .placeholder-note{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:rgba(255,255,255,.7);font-size:.85rem;text-align:center;letter-spacing:.05em}
+
+  /* Leistungen */
+  .services{background:var(--surface);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .section-head{display:flex;justify-content:space-between;align-items:end;gap:30px;margin-bottom:44px;flex-wrap:wrap}
+  .price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+  .card{background:var(--bg);border:1px solid var(--line);border-radius:var(--radius);padding:30px}
+  .card h3{font-size:1.45rem;margin-bottom:18px}
+  .price-list{list-style:none}
+  .price-list li{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px dashed var(--line);font-size:.98rem}
+  .price-list li:last-child{border-bottom:0}
+  .price-list span:last-child{font-weight:600;white-space:nowrap}
+  .small{font-size:.85rem;color:var(--muted);margin-top:22px}
+
+  /* Über uns */
+  .about-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:60px;align-items:center}
+  .about-visual{aspect-ratio:1;border-radius:var(--radius);background:linear-gradient(135deg,#d8bfa8,#a7785a);position:relative}
+  .about p{color:var(--muted);margin-bottom:1.1em}
+  .quote{font-family:var(--serif);font-size:1.35rem;font-style:italic;color:var(--ink);border-left:3px solid var(--accent);padding-left:18px;margin:1.6em 0}
+
+  /* Galerie */
+  .gallery{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:200px;gap:14px}
+  .g{border-radius:var(--radius);position:relative;overflow:hidden}
+  .g:nth-child(1){grid-row:span 2;background:linear-gradient(160deg,#c98a63,#6e3a20)}
+  .g:nth-child(2){background:linear-gradient(160deg,#e2cdb9,#b48b6e)}
+  .g:nth-child(3){background:linear-gradient(160deg,#8a6a58,#3d2b22)}
+  .g:nth-child(4){grid-row:span 2;background:linear-gradient(160deg,#dcb79b,#9c5f3d)}
+  .g:nth-child(5){grid-column:span 2;background:linear-gradient(120deg,#efe2d4,#c7a487)}
+  .g span{position:absolute;left:14px;bottom:12px;color:#fff;font-size:.82rem;opacity:.85}
+
+  /* Bewertungen */
+  .reviews{background:var(--ink);color:var(--bg)}
+  .reviews .eyebrow{color:#e3a27f}
+  .review-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:40px}
+  .review{border:1px solid rgba(255,255,255,.14);border-radius:var(--radius);padding:28px}
+  .stars{color:#e3a27f;letter-spacing:3px;margin-bottom:12px}
+  .review p{font-family:var(--serif);font-size:1.12rem;margin-bottom:16px}
+  .review small{color:#b6aca3}
+
+  /* Kontakt */
+  .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+  .info-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:34px}
+  .hours{list-style:none;margin-top:10px}
+  .hours li{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+  .hours li:last-child{border-bottom:0}
+  .hours .closed{color:var(--muted)}
+  .contact-line{display:flex;gap:14px;align-items:flex-start;margin-bottom:18px}
+  .contact-line .ic{width:40px;height:40px;border-radius:50%;background:var(--bg);display:grid;place-items:center;flex-shrink:0;color:var(--accent)}
+  .contact-line a{text-decoration:none;font-weight:600}
+  .contact-line small{display:block;color:var(--muted)}
+
+  /* Footer */
+  footer{border-top:1px solid var(--line);padding:30px 0;font-size:.9rem;color:var(--muted)}
+  footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+  footer a{text-decoration:none;margin-left:18px}
+  footer a:hover{color:var(--ink)}
+
+  /* Mobile Anruf-Leiste */
+  .mobile-bar{display:none}
+
+  @media (max-width:860px){
+    body{font-size:16px}
+    section{padding:64px 0}
+    .nav ul{display:none}
+    .hero{padding:40px 0 64px}
+    .hero-grid,.about-grid,.contact-grid{grid-template-columns:1fr;gap:36px}
+    .hero-visual{aspect-ratio:4/3.4;border-radius:var(--radius);order:-1}
+    .price-grid,.review-grid{grid-template-columns:1fr}
+    .gallery{grid-template-columns:1fr 1fr;grid-auto-rows:150px}
+    .g:nth-child(5){grid-column:span 2}
+    .mobile-bar{display:grid;grid-template-columns:1fr 1fr;gap:10px;position:fixed;left:12px;right:12px;bottom:12px;z-index:30}
+    .mobile-bar .btn{justify-content:center;box-shadow:0 10px 25px rgba(0,0,0,.18)}
+    .mobile-bar .btn-ghost{background:var(--surface)}
+    footer{padding-bottom:96px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <!-- ANPASSEN: Name -->
+    <a href="#" class="logo">Salon <span>Mira</span></a>
+    <ul>
+      <li><a href="#leistungen">Leistungen</a></li>
+      <li><a href="#ueber-uns">Über uns</a></li>
+      <li><a href="#galerie">Galerie</a></li>
+      <li><a href="#kontakt">Kontakt</a></li>
+    </ul>
+    <a href="tel:+4912345678900" class="btn btn-primary">Termin buchen</a>
+  </div>
+</header>
+
+<main>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <div class="eyebrow">Friseur in Musterstadt</div>
+        <h1>Haare, die sich nach <em>dir</em> anfühlen.</h1>
+        <p>Moderne Schnitte, natürliche Farben und ehrliche Beratung – in entspannter Atmosphäre, mitten in der Altstadt.</p>
+        <div class="hero-actions">
+          <a href="tel:+4912345678900" class="btn btn-primary">📞 Jetzt anrufen</a>
+          <a href="#leistungen" class="btn btn-ghost">Preise ansehen</a>
+        </div>
+        <div class="hero-meta">
+          <div><strong>4,9 ★</strong>Google-Bewertung</div>
+          <div><strong>12 Jahre</strong>Erfahrung</div>
+          <div><strong>Di–Sa</strong>geöffnet</div>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="placeholder-note">Foto vom Salon</div>
+        <div class="tag">Heute geöffnet · <b>9–18 Uhr</b></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LEISTUNGEN -->
+  <section class="services" id="leistungen">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Leistungen &amp; Preise</div>
+          <h2>Was wir für dich tun</h2>
+        </div>
+        <p class="lead">Alle Preise inklusive Beratung und Waschen. Bei langen Haaren kann der Preis variieren.</p>
+      </div>
+      <div class="price-grid">
+        <div class="card">
+          <h3>Damen</h3>
+          <ul class="price-list">
+            <li><span>Waschen, Schneiden, Föhnen</span><span>ab 49 €</span></li>
+            <li><span>Pony nachschneiden</span><span>10 €</span></li>
+            <li><span>Hochsteckfrisur</span><span>ab 55 €</span></li>
+            <li><span>Föhnen &amp; Styling</span><span>ab 29 €</span></li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Herren</h3>
+          <ul class="price-list">
+            <li><span>Haarschnitt</span><span>29 €</span></li>
+            <li><span>Maschinenschnitt</span><span>19 €</span></li>
+            <li><span>Bart trimmen</span><span>15 €</span></li>
+            <li><span>Kinder bis 12 Jahre</span><span>18 €</span></li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Farbe</h3>
+          <ul class="price-list">
+            <li><span>Ansatzfarbe</span><span>ab 45 €</span></li>
+            <li><span>Komplettfarbe</span><span>ab 65 €</span></li>
+            <li><span>Strähnen / Balayage</span><span>ab 89 €</span></li>
+            <li><span>Pflege-Kur</span><span>15 €</span></li>
+          </ul>
+        </div>
+      </div>
+      <p class="small">Termine am besten telefonisch oder per WhatsApp – spontan vorbeikommen klappt oft auch.</p>
+    </div>
+  </section>
+
+  <!-- ÜBER UNS -->
+  <section class="about" id="ueber-uns">
+    <div class="wrap about-grid">
+      <div class="about-visual"><div class="placeholder-note">Foto der Inhaberin</div></div>
+      <div>
+        <div class="eyebrow">Über uns</div>
+        <h2>Ein kleiner Salon mit viel Herz</h2>
+        <p>Seit 2014 schneide, färbe und style ich Haare in Musterstadt. Mir ist wichtig, dass du dich wohlfühlst – mit einem Kaffee in der Hand und genug Zeit für eine ehrliche Beratung.</p>
+        <p>Wir arbeiten mit hochwertigen, schonenden Produkten und nehmen uns Zeit für jeden Kunden.</p>
+        <div class="quote">„Ein guter Schnitt ist der, den du morgens selbst hinbekommst.“</div>
+        <p><strong style="color:var(--ink)">Mira Beispiel</strong> · Friseurmeisterin &amp; Inhaberin</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- GALERIE -->
+  <section id="galerie" style="padding-top:0">
+    <div class="wrap">
+      <div class="eyebrow">Galerie</div>
+      <h2 style="margin-bottom:36px">Einblicke</h2>
+      <div class="gallery">
+        <div class="g"><span>Foto 1</span></div>
+        <div class="g"><span>Foto 2</span></div>
+        <div class="g"><span>Foto 3</span></div>
+        <div class="g"><span>Foto 4</span></div>
+        <div class="g"><span>Foto 5</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BEWERTUNGEN -->
+  <section class="reviews">
+    <div class="wrap">
+      <div class="eyebrow">Das sagen unsere Kunden</div>
+      <h2>Beispiel-Bewertungen</h2>
+      <div class="review-grid">
+        <div class="review"><div class="stars">★★★★★</div><p>„Endlich ein Friseur, der wirklich zuhört. Bin super zufrieden!“</p><small>Beispielkundin</small></div>
+        <div class="review"><div class="stars">★★★★★</div><p>„Tolle Atmosphäre, faire Preise und der Schnitt hält ewig.“</p><small>Beispielkunde</small></div>
+        <div class="review"><div class="stars">★★★★★</div><p>„Meine Balayage ist genau so geworden, wie ich sie wollte.“</p><small>Beispielkundin</small></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- KONTAKT -->
+  <section id="kontakt">
+    <div class="wrap">
+      <div class="eyebrow">Kontakt</div>
+      <h2 style="margin-bottom:36px">So erreichst du uns</h2>
+      <div class="contact-grid">
+        <div class="info-card">
+          <div class="contact-line"><div class="ic">📍</div><div><small>Adresse</small>Musterstraße 12<br>12345 Musterstadt<br><a href="https://www.google.com/maps/search/?api=1&query=Musterstraße+12+Musterstadt" target="_blank" rel="noopener">Route planen →</a></div></div>
+          <div class="contact-line"><div class="ic">📞</div><div><small>Telefon</small><a href="tel:+4912345678900">0123 456 789 00</a></div></div>
+          <div class="contact-line"><div class="ic">💬</div><div><small>WhatsApp</small><a href="https://wa.me/4912345678900" target="_blank" rel="noopener">Nachricht schreiben</a></div></div>
+          <div class="contact-line"><div class="ic">📷</div><div><small>Instagram</small><a href="#">@salon.mira</a></div></div>
+        </div>
+        <div class="info-card">
+          <h3 style="font-size:1.4rem">Öffnungszeiten</h3>
+          <ul class="hours">
+            <li><span>Montag</span><span class="closed">geschlossen</span></li>
+            <li><span>Dienstag</span><span>9:00 – 18:00</span></li>
+            <li><span>Mittwoch</span><span>9:00 – 18:00</span></li>
+            <li><span>Donnerstag</span><span>9:00 – 20:00</span></li>
+            <li><span>Freitag</span><span>9:00 – 18:00</span></li>
+            <li><span>Samstag</span><span>9:00 – 14:00</span></li>
+            <li><span>Sonntag</span><span class="closed">geschlossen</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Salon Mira</span>
+    <!-- Pflicht in DE: Impressum + Datenschutz -->
+    <span><a href="#">Impressum</a><a href="#">Datenschutz</a></span>
+  </div>
+</footer>
+
+<div class="mobile-bar">
+  <a href="tel:+4912345678900" class="btn btn-primary">📞 Anrufen</a>
+  <a href="https://wa.me/4912345678900" class="btn btn-ghost" target="_blank" rel="noopener">💬 WhatsApp</a>
+</div>
+
+</body>
+</html>
